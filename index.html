@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naayar Chai - Takeaway Booking</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #fffaf0;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background: rgba(255, 248, 230, 0.95);
+      max-width: 1000px;
+      margin: auto;
+      padding: 30px;
+    }
+    h1, h2, p {
+      text-align: center;
+    }
+    h1 {
+      color: #8B0000;
+      font-size: 2.5em;
+    }
+    h2 {
+      color: #5c3317;
+      margin-top: 40px;
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px dashed #ccc;
+    }
+    .item span {
+      flex: 1;
+    }
+    .item input[type="number"] {
+      width: 50px;
+      text-align: center;
+      margin: 0 10px;
+    }
+    .item button {
+      background-color: #8B4513;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .notification {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+      margin: 20px auto;
+      font-size: 1.1em;
+    }
+    .cart {
+      background-color: #fff7ee;
+      border: 2px dashed #8B4513;
+      padding: 15px;
+      margin-top: 30px;
+    }
+    .checkout input, .checkout select, .checkout textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+    .order-button {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 25px;
+      background-color: green;
+      color: #fff;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍵 NAAYAR CHAI</h1>
+    <p><em>"Brewing Tradition in Every Cup - Takeaway Orders"</em></p>
+
+    <div id="menu"></div>
+    <div class="notification" id="notification"></div>
+
+    <div class="cart">
+      <h2>🛍️ Your Takeaway Cart</h2>
+      <ul id="cartItems"></ul>
+      <p><strong>Total:</strong> ₹<span id="total">0</span></p>
+    </div>
+
+    <div class="checkout">
+      <h2>📝 Customer Details</h2>
+      <input type="text" id="name" placeholder="Your Name" required />
+      <input type="text" id="phone" placeholder="Mobile Number" required />
+      <textarea id="instructions" placeholder="Pickup Instructions (Optional)"></textarea>
+
+      <select id="payment" required>
+        <option value="">-- Select Payment Option --</option>
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI</option>
+        <option value="Card">Card</option>
+      </select>
+
+      <a class="order-button" href="#" onclick="checkout()">📲 Confirm Takeaway on WhatsApp</a>
+    </div>
+  </div>
+
+  <script>
+    const menuData = {
+      "🫖 Chai Specialties": [
+        ["Classic Masala Chai", 25], ["Adrak (Ginger) Chai", 30], ["Elaichi (Cardamom) Chai", 35],
+        ["Tulsi Chai", 30], ["Tandoori Chai", 50], ["Kashmiri Pink Chai", 60],
+        ["Cutting Chai", 20], ["Saffron (Kesar) Chai", 55], ["Lemongrass Chai", 35],
+        ["Chocolate Chai", 40], ["Jaggery Chai (Gud wali chai)", 35]
+      ],
+      "🥛 Milk-Based Drinks": [
+        ["Badam Milk", 50], ["Rose Milk", 45], ["Kesar Milk", 50],
+        ["Turmeric Milk (Haldi Doodh)", 40], ["Cold Coffee", 60], ["Iced Chai", 50],
+        ["Falooda Milk", 70], ["Pista Milk", 50]
+      ],
+      "🍽️ Snacks & Savories": [
+        ["Samosa", 20], ["Aloo Bonda", 25], ["Kanda Bhaji (Onion Pakora)", 35], ["Mirchi Bhajiya", 30],
+        ["Sabudana Vada", 40], ["Masala Peanuts", 25], ["Moong Dal Pakora", 35],
+        ["Bread Pakora", 30], ["Batata Vada", 25], ["Poha", 40], ["Upma", 40],
+        ["Veg Cutlet", 35], ["Veg Puff", 30], ["Paneer Puff", 35], ["Dhokla", 35]
+      ],
+      "🥯 Bakery & Breads": [
+        ["Bun Maska", 25], ["Khari Biscuit", 20], ["Rusk (Toast)", 20], ["Jeera Biscuit", 20],
+        ["Parle‑G Biscuits", 15], ["Nankhatai", 25], ["Osmania Biscuit", 25], ["Fruit Cake Slice", 40]
+      ],
+      "🍭 Sweets": [
+        ["Jalebi", 40], ["Gulab Jamun", 45], ["Imarti", 50], ["Malpua", 60], ["Peda", 50],
+        ["Rasgulla", 50], ["Kalakand", 55], ["Coconut Ladoo", 50]
+      ],
+      "🧃 Cold Refreshments": [
+        ["Nimbu Pani", 20], ["Masala Soda", 25], ["Aam Panna", 30], ["Buttermilk (Chaas)", 25],
+        ["Fresh Lime Soda", 25], ["Mango Shake", 60], ["Lassi (Sweet/Salted)", 50], ["Rose Sharbat", 40]
+      ],
+      "🍳 Egg & Street‑Style": [
+        ["Anda Bhurji (Spicy Scrambled Eggs)", 60], ["Egg Pakora", 40], ["Egg Puff", 35],
+        ["Pav Bhaji", 70], ["Bombay Sandwich", 60], ["Chilli Cheese Toast", 50], ["Vada Pav", 35]
+      ],
+      "🍜 Light Meals": [
+        ["Chole Bhature", 80], ["Idli Sambhar", 70], ["Dosa (Plain)", 75], ["Dosa (Masala)", 85],
+        ["Poori Bhaji", 70], ["Pulao (Veg)", 80], ["Khichdi", 75], ["Pav with Misal", 80]
+      ]
+    };
+
+    let cart = [];
+    let total = 0;
+
+    function renderMenu() {
+      const menu = document.getElementById('menu');
+      for (const category in menuData) {
+        const section = document.createElement('div');
+        section.innerHTML = `<h2>${category}</h2>`;
+        menuData[category].forEach(([item, price]) => {
+          const row = document.createElement('div');
+          row.className = 'item';
+          row.innerHTML = `
+            <span>${item} – ₹${price}</span>
+            <input type="number" min="1" value="1" id="qty-${item}" />
+            <button onclick="addToCart('${item}', ${price})">Add</button>`;
+          section.appendChild(row);
+        });
+        menu.appendChild(section);
+      }
+    }
+
+    function addToCart(item, price) {
+      const qty = parseInt(document.getElementById(`qty-${item}`).value);
+      if (!qty || qty < 1) return;
+      cart.push({ item, price, qty });
+      total += price * qty;
+      updateCart();
+      showNotification(`${item} added to cart`);
+    }
+
+    function updateCart() {
+      const cartList = document.getElementById('cartItems');
+      cartList.innerHTML = '';
+      cart.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = `${c.item} x${c.qty} – ₹${c.price * c.qty}`;
+        cartList.appendChild(li);
+      });
+      document.getElementById('total').textContent = total;
+    }
+
+    function showNotification(msg) {
+      const note = document.getElementById('notification');
+      note.textContent = msg;
+      setTimeout(() => note.textContent = '', 4000);
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
+
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const payment = document.getElementById('payment').value;
+      const instructions = document.getElementById('instructions').value.trim();
+
+      if (!name || !phone || !payment) {
+        alert('Please fill all required fields.');
+        return;
+      }
+
+      let message = '*Takeaway Order to Naayar Chai:*\n\n';
+      cart.forEach(c => {
+        message += `• ${c.item} x${c.qty} – ₹${c.price * c.qty}\n`;
+      });
+
+      message += `\n*Total:* ₹${total}\n\n*Customer Details:*\n`;
+      message += `Name: ${name}\nPhone: ${phone}\nPayment: ${payment}`;
+      if (instructions) message += `\nInstructions: ${instructions}`;
+
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappURL = `https://wa.me/916374235982?text=${encodedMessage}`;
+      window.open(whatsappURL, '_blank');
+
+      showNotification('Your takeaway order has been received! We will confirm it via WhatsApp. Thank you for choosing Naayar Chai.');
+    }
+
+    window.onload = renderMenu;
+  </script>
+</body>
+</html>
